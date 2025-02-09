@@ -277,7 +277,9 @@ class TCN(Layer):
             return shape
 
     def build(self, input_shape):
-
+        # tuple to Tensor
+        if isinstance(input_shape, tuple):
+            input_shape = TensorShape(input_shape)
         # member to hold current output shape of the layer for building purposes
         self.build_output_shape = input_shape
 
@@ -311,9 +313,10 @@ class TCN(Layer):
 
         self.output_slice_index = None
         if self.padding == 'same':
-            time = self.tolist(self.build_output_shape)[1]
+            # fixed tolist() method
+            time = self.build_output_shape[1] if isinstance(self.build_output_shape, TensorShape) else self.build_output_shape[1]
             if time is not None:  # if time dimension is defined. e.g. shape = (bs, 500, input_dim).
-                self.output_slice_index = int(self.tolist(self.build_output_shape)[1] / 2)
+                self.output_slice_index = int(time / 2)
             else:
                 # It will known at call time. c.f. self.call.
                 self.padding_same_and_time_dim_unknown = True
@@ -321,7 +324,12 @@ class TCN(Layer):
         else:
             self.output_slice_index = -1  # causal case.
         self.slicer_layer = Lambda(lambda tt: tt[:, self.output_slice_index, :], name='Slice_Output')
-        self.slicer_layer.build(self.tolist(self.build_output_shape))
+        # fixed self.slicer_layer.build process
+        if isinstance(self.build_output_shape, TensorShape):
+            shape_list = self.build_output_shape.as_list()
+        else:
+            shape_list = list(self.build_output_shape)
+        self.slicer_layer.build(shape_list)
 
     def compute_output_shape(self, input_shape):
         """
