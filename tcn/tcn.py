@@ -10,7 +10,7 @@ from tensorflow.keras import layers
 from tensorflow.keras.layers import Activation, SpatialDropout1D, Lambda
 # pylint: disable=E0611,E0401
 from tensorflow.keras.layers import Layer, Conv1D, Dense, BatchNormalization, LayerNormalization
-
+from tensorflow.python.framework.tensor_shape import TensorShape
 
 def is_power_of_two(num: int):
     return num != 0 and ((num & (num - 1)) == 0)
